@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Code') {
+            steps {
+                git 'https://github.com/your-username/python-docker-app.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build("python-webapp:latest")
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    // Stop existing container if running
+                    sh "docker stop python-web-container || true"
+                    sh "docker rm python-web-container || true"
+
+                    // Run new container
+                    sh "docker run -d -p 8080:8080 --name python-web-container python-webapp:latest"
+                }
+            }
+        }
+    }
+}
