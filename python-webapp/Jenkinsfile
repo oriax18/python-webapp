@@ -2,30 +2,27 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Code') {
+        stage('Clone Repo') {
             steps {
-                git 'https://github.com/your-username/python-docker-app.git'
+                git credentialsId: 'github-pat', url: 'https://github.com/oriax18/python-webapp.git'
             }
         }
-
         stage('Build Docker Image') {
             steps {
-                script {
-                    dockerImage = docker.build("python-webapp:latest")
-                }
+                bat 'docker build -t python-webapp .'
             }
         }
-
+        stage('Stop Existing Container') {
+            steps {
+                bat '''
+                docker stop python-web-container || echo "Container not running"
+                docker rm python-web-container || echo "Container not exists"
+                '''
+            }
+        }
         stage('Run Docker Container') {
             steps {
-                script {
-                    // Stop existing container if running
-                    sh "docker stop python-web-container || true"
-                    sh "docker rm python-web-container || true"
-
-                    // Run new container
-                    sh "docker run -d -p 8080:8080 --name python-web-container python-webapp:latest"
-                }
+                bat 'docker run -d -p 8081:8080 --name python-web-container python-webapp'
             }
         }
     }
